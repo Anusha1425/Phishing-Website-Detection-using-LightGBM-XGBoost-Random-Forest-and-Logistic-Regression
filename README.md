@@ -1,4 +1,4 @@
-# Phishing-Website-Detection-using-LightGBM-XGBoost-Random-Forest-and-Logistic-Regression
+# Phishing-Website-Detector-using-LightGBM-XGBoost-Random-Forest-and-Logistic-Regression
 
 
 dataset link:

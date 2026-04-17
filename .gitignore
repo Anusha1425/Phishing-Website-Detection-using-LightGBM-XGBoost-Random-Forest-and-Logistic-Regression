@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Project Specific - model file is INCLUDED for deployment (needed by web server)
+# models/*.pkl  <-- intentionally NOT ignored so Render/Railway can use it
+
+*.csv
+*.png
+*.txt
+!requirements.txt
+!lstm_results.txt
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -5,13 +5,16 @@ import re
 from urllib.parse import urlparse
 
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, precision_score, recall_score, f1_score, roc_auc_score
 
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.linear_model import LogisticRegression
 
 import xgboost as xgb
 import lightgbm as lgb
+import joblib
+import os
+from src.features import extract_features, get_feature_names
 
 
 # -----------------------------
@@ -50,36 +53,8 @@ df['type'] = df['type'].map({
 # 4 Feature Extraction
 # -----------------------------
 
-def extract_features(url):
-
-    try:
-
-        parsed = urlparse(url)
-
-        features = {}
-
-        features['url_length'] = len(url)
-        features['num_dots'] = url.count('.')
-        features['num_hyphen'] = url.count('-')
-        features['num_at'] = url.count('@')
-        features['num_question'] = url.count('?')
-        features['num_equal'] = url.count('=')
-        features['num_and'] = url.count('&')
-        features['num_percent'] = url.count('%')
-        features['num_slash'] = url.count('/')
-        features['num_www'] = url.count('www')
-
-        features['num_http'] = url.count('http')
-        features['num_https'] = url.count('https')
-
-        features['path_length'] = len(parsed.path)
-
-        features['has_ip'] = 1 if re.search(r'\d+\.\d+\.\d+\.\d+', url) else 0
-
-        return list(features.values())
-
-    except:
-        return [0]*13
+# Use modular features from src/features.py
+# extract_features is now imported from src.features
 
 
 # -----------------------------
@@ -148,45 +123,75 @@ lr = LogisticRegression(
 # -----------------------------
 
 ensemble_model = VotingClassifier(
-
     estimators=[
         ('rf', rf),
         ('xgb', xgb_model),
         ('lgb', lgb_model),
         ('lr', lr)
     ],
-
-    voting='hard'
+    voting='soft'
 )
 
-
 # -----------------------------
-# 10 Train Model
-# -----------------------------
-
-print("Training Model...")
-
-ensemble_model.fit(X_train, y_train)
-
-
-# -----------------------------
-# 11 Prediction
+# 10 Train & Evaluate Models
 # -----------------------------
 
-y_pred = ensemble_model.predict(X_test)
+models = {
+    "Logistic Regression": lr,
+    "Random Forest": rf,
+    "XGBoost": xgb_model,
+    "LightGBM": lgb_model,
+    "Voting Classifier (Ours)": ensemble_model
+}
 
+results = []
+
+print("Starting Model Training and Evaluation...")
+
+for name, model in models.items():
+    print(f"Training {name}...")
+    model.fit(X_train, y_train)
+    
+    # Predictions
+    y_pred = model.predict(X_test)
+    y_prob = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else y_pred
+    
+    # Metrics
+    acc = accuracy_score(y_test, y_pred)
+    prec = precision_score(y_test, y_pred)
+    rec = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+    auc = roc_auc_score(y_test, y_prob)
+    
+    results.append({
+        "Model": name,
+        "Accuracy": f"{acc*100:.1f}%",
+        "Precision": f"{prec*100:.1f}%",
+        "Recall": f"{rec*100:.1f}%",
+        "F1-Score": f"{f1*100:.1f}%",
+        "ROC-AUC": f"{auc:.3f}"
+    })
 
 # -----------------------------
-# 12 Evaluation
+# 11 Display Results Table
 # -----------------------------
 
-accuracy = accuracy_score(y_test, y_pred)
+results_df = pd.DataFrame(results)
+print("\n--- COMPARATIVE PERFORMANCE METRICS ---")
+print(results_df.to_string(index=False))
 
-print("\nModel Accuracy:", accuracy)
+# -----------------------------
+# 12 Save Results & Models
+# -----------------------------
+results_df.to_csv("model_comparison_results.csv", index=False)
+print("\nResults exported to model_comparison_results.csv")
 
-print("\nClassification Report:\n")
-
-print(classification_report(y_test, y_pred))
+# Save the final ensemble model for web deployment
+model_dir = "models"
+os.makedirs(model_dir, exist_ok=True)
+model_path = os.path.join(model_dir, "phishing_ensemble_model.pkl")
+joblib.dump(ensemble_model, model_path)
+print(f"Ensemble model saved to {model_path}")
 
 
 # -----------------------------

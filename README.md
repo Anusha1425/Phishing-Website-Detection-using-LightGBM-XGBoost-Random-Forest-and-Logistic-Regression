@@ -1,5 +1,7 @@
 # 🛡️ PhishGuard AI — Phishing Website Detector
 
+[**🌐 Live Demo Dashboard**](https://phishguard-ai-q4l9.onrender.com)
+
 **PhishGuard AI** is a full-stack, production-ready phishing website detection system powered by an ensemble of machine learning models. It combines a high-accuracy AI backend with a real-time, professional-grade **Quantum Security Dashboard** built on Flask and modern CSS/SVG animations.
 
 > Built for academic research and real-world security analysis. Detects phishing URLs with high confidence using structural and lexical feature extraction.
@@ -216,7 +218,7 @@ Results are stored in `model_comparison_results.csv`. The ensemble model consist
 
 - [ ] Integrate a real-time WHOIS API for accurate domain age.
 - [ ] Add content-based features (page text, form actions, redirects).
-- [ ] Deploy on a cloud platform (AWS / GCP / Render) with Gunicorn.
+- [x] Deploy on a cloud platform (Render) with Gunicorn.
 - [ ] Expand the dataset with more recent phishing URLs.
 - [ ] Add user authentication and URL scan history logging.
 

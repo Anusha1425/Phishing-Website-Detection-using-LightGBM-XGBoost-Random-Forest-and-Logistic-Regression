@@ -222,8 +222,3 @@ Results are stored in `model_comparison_results.csv`. The ensemble model consist
 - [ ] Expand the dataset with more recent phishing URLs.
 - [ ] Add user authentication and URL scan history logging.
 
----
-
-## 📄 License
-
-This project is for academic and research purposes. Please cite appropriately if used in published work.
